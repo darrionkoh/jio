@@ -1,0 +1,39 @@
+/* ─── Tab Nav ───────────────────────────────────────────────── */
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  border: 0.5px solid var(--color-border);
+  padding: 4px;
+  margin-bottom: 1.25rem;
+}
+
+.tab {
+  padding: 9px 4px;
+  border: none;
+  background: transparent;
+  font-size: 11px;
+  font-family: var(--font);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: center;
+  transition: all 0.12s;
+}
+
+.tab:hover:not(.active) {
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+}
+
+.tab.active {
+  background: var(--color-blue-mid);
+  color: var(--color-blue-darker);
+  font-weight: 600;
+  border: 0.5px solid var(--color-blue);
+}

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jio!</title>
+  <link rel="icon" type="image/svg+xml" href="/src/assets/jioicon.png" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/tabs.css" />
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- header -->
+    <header class="app-header">
+      <h1 class="app-title">Jio!</h1>
+      <p class="app-sub">Going out in Singapore? We got you.</p>
+    </header>
+
+    <!-- tabs -->
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="bill">Bill<br />Splitter</button>
+      <button class="tab" data-tab="gst">GST<br />Calculator</button>
+      <button class="tab" data-tab="debts">Owe Money<br />Pay Money</button>
+      <button class="tab" data-tab="spin">Spin The<br />Wheel</button>
+    </nav>
+
+    <!-- panels -->
+    <main>
+      <div id="panel-bill" class="panel active"></div>
+      <div id="panel-gst" class="panel"></div>
+      <div id="panel-debts" class="panel"></div>
+      <div id="panel-spin" class="panel"></div>
+    </main>
+
+  </div>
+
+  <!-- footer -->
+  <footer style="text-align: center; padding: 2rem 0 1rem; font-size: 12px; color: var(--color-text-tertiary);">
+    Made by Darrion Koh &middot; 2026
+  </footer>
+
+  <!-- utils -->
+  <script src="js/utils/format.js"></script>
+
+  <!-- components -->
+  <script src="js/components/bill.js"></script>
+  <script src="js/components/gst.js"></script>
+  <script src="js/components/debts.js"></script>
+  <script src="js/components/spin.js"></script>
+
+  <script src="js/app.js"></script>
+</body>
+
+</html>
