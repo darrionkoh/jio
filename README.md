@@ -1,6 +1,6 @@
 # Jio!
 
-A clean and simple going-out toolkit built for Singapore. Built with HTML, CSS, and JavaScript.
+A clean and simple going-out toolkit built for Singaporeans, by Singaporean. Built with HTML, CSS, and JavaScript.
 
 ## Features
 
