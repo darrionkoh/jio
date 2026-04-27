@@ -1,26 +1,47 @@
 const Debts = (() => {
   let debts = [];
+  let editingIndex = null;
 
-  //render component
+  const STORAGE_KEY = "jio_debts";
 
+  // load from localStorage
+  function load() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) debts = JSON.parse(saved);
+  }
+
+  // save to localStorage
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(debts));
+  }
+
+  // get today as YYYY-MM-DD
+  function todayStr() {
+    return new Date().toISOString().split("T")[0];
+  }
+
+  // render component
   function render() {
+    load();
+
     document.getElementById("panel-debts").innerHTML = `
       <div class="card">
-        <div class="card-title">Log An Outing</div>
+        <div class="card-title" id="debt-form-title">Log A Debt</div>
         <div class="row">
-          <input type="text" id="debt-desc" placeholder="What was it? (e.g. Dinner at Maxwell)" />
+          <input type="text" id="debt-desc" placeholder="What was it? (e.g. Dinner at Orchard)" />
         </div>
         <div class="row">
           <input type="text" id="debt-payer" placeholder="Who paid?" />
+          <input type="text" id="debt-ower" placeholder="Who owes?" />
           <input type="number" id="debt-amount" placeholder="$0.00" style="width: 110px;" />
         </div>
-        <input
-          type="text"
-          id="debt-owers"
-          class="input-full"
-          placeholder="Who splits it? (names, comma separated)"
-        />
-        <button class="btn-primary" id="debt-add-btn">Add Outing</button>
+        <div class="row">
+          <input type="date" id="debt-date" value="${todayStr()}" max="${todayStr()}" />
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-primary" id="debt-add-btn" style="margin-top: 10px;">Add Entry</button>
+          <button class="btn-secondary" id="debt-cancel-btn" style="display: none; margin-top: 10px; padding: 11px 16px;">Cancel</button>
+        </div>
       </div>
 
       <div class="card">
@@ -32,54 +53,128 @@ const Debts = (() => {
     `;
 
     bindEvents();
+    refreshList();
   }
 
-
+  // bind events
   function bindEvents() {
-    document.getElementById("debt-add-btn").addEventListener("click", addDebt);
+    document.getElementById("debt-add-btn").addEventListener("click", submitForm);
+    document.getElementById("debt-cancel-btn").addEventListener("click", cancelEdit);
   }
 
-  // add debt entry
-
-  function addDebt() {
+  // handles both add and save edit
+  function submitForm() {
     const desc = document.getElementById("debt-desc").value.trim();
     const payer = document.getElementById("debt-payer").value.trim();
+    const ower = document.getElementById("debt-ower").value.trim();
     const amount = parseFloat(document.getElementById("debt-amount").value) || 0;
-    const owersRaw = document.getElementById("debt-owers").value.trim();
+    const date = document.getElementById("debt-date").value;
 
-    if (!payer || !amount || !owersRaw) return;
+    if (!desc || !payer || !ower || !amount || !date) return;
+    if (payer.toLowerCase() === ower.toLowerCase()) return;
 
-    const owers = owersRaw
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean)
-      .filter((s) => s.toLowerCase() !== payer.toLowerCase());
+    const parsed = new Date(date).getTime();
+    if (isNaN(parsed)) return;
 
-    if (!owers.length) return;
+    if (editingIndex !== null) {
+      debts[editingIndex].desc = desc;
+      debts[editingIndex].payer = payer;
+      debts[editingIndex].ower = ower;
+      debts[editingIndex].amount = amount;
+      debts[editingIndex].createdAt = parsed;
+      editingIndex = null;
+      setFormState("add");
+    } else {
+      debts.push({ desc, payer, ower, amount, settled: false, createdAt: parsed, settledAt: null });
+    }
 
-    const share = parseFloat((amount / (owers.length + 1)).toFixed(2));
-    owers.forEach((ower) => debts.push({ desc, payer, ower, amount: share, settled: false }));
+    clearForm();
+    save();
+    refreshList();
+  }
 
-    ["debt-desc", "debt-payer", "debt-amount", "debt-owers"].forEach(
+  // populate form for editing
+  function edit(index) {
+    const d = debts[index];
+    editingIndex = index;
+
+    document.getElementById("debt-desc").value = d.desc;
+    document.getElementById("debt-payer").value = d.payer;
+    document.getElementById("debt-ower").value = d.ower;
+    document.getElementById("debt-amount").value = d.amount;
+    document.getElementById("debt-date").value = new Date(d.createdAt).toISOString().split("T")[0];
+
+    setFormState("edit");
+    document.getElementById("debt-desc").focus();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // cancel edit mode
+  function cancelEdit() {
+    editingIndex = null;
+    clearForm();
+    setFormState("add");
+  }
+
+  // toggle form between add and edit state
+  function setFormState(mode) {
+    const btn = document.getElementById("debt-add-btn");
+    const cancel = document.getElementById("debt-cancel-btn");
+    const title = document.getElementById("debt-form-title");
+
+    if (mode === "edit") {
+      btn.textContent = "Save Changes";
+      cancel.style.display = "block";
+      title.textContent = "Edit Debt";
+    } else {
+      btn.textContent = "Add Entry";
+      cancel.style.display = "none";
+      title.textContent = "Log A Debt";
+    }
+  }
+
+  // clear all form fields
+  function clearForm() {
+    ["debt-desc", "debt-payer", "debt-ower", "debt-amount"].forEach(
       (id) => (document.getElementById(id).value = "")
     );
-
-    refreshList();
+    document.getElementById("debt-date").value = todayStr();
   }
 
-  // remove debt
+  // settle or unsettle
   function settle(index) {
-    debts[index].settled = !debts[index].settled;
+    if (debts[index].settled) {
+      debts[index].settled = false;
+      debts[index].settledAt = null;
+    } else {
+      debts[index].settled = true;
+      debts[index].settledAt = Date.now();
+    }
+    save();
     refreshList();
   }
 
-  // render debt list
+  // remove from settled list
+  function remove(index) {
+    debts.splice(index, 1);
+    save();
+    refreshList();
+  }
 
+  // check debt age tier
+  function ageTier(createdAt) {
+    const days = (Date.now() - createdAt) / (1000 * 60 * 60 * 24);
+    if (days > 30) return "old";
+    if (days > 7) return "aging";
+    return "fresh";
+  }
+
+  // refresh debt list
   function refreshList() {
     const el = document.getElementById("debt-list");
 
     if (!debts.length) {
-      el.innerHTML = `<div class="empty-state">No debts yet — jio your friends out!</div>`;
+      el.innerHTML = `<div class="empty-state">No debts yet, jio your friends out leh...</div>`;
       return;
     }
 
@@ -98,20 +193,50 @@ const Debts = (() => {
     el.querySelectorAll(".settle-btn").forEach((btn) => {
       btn.addEventListener("click", () => settle(Number(btn.dataset.index)));
     });
+
+    el.querySelectorAll(".edit-btn").forEach((btn) => {
+      btn.addEventListener("click", () => edit(Number(btn.dataset.index)));
+    });
+
+    el.querySelectorAll(".remove-btn").forEach((btn) => {
+      btn.addEventListener("click", () => remove(Number(btn.dataset.index)));
+    });
   }
 
   function debtRowHTML(d, i) {
+    const tier = ageTier(d.createdAt);
+    const badgeClass = d.settled
+      ? "badge-settled"
+      : tier === "old"
+        ? "badge-old"
+        : tier === "aging"
+          ? "badge-aging"
+          : "badge-owes";
+
+    const outingDate = new Date(d.createdAt).toLocaleDateString("en-SG", {
+      day: "numeric", month: "short", year: "numeric"
+    });
+
+    const settledDate = d.settledAt
+      ? new Date(d.settledAt).toLocaleDateString("en-SG", {
+        day: "numeric", month: "short", year: "numeric"
+      })
+      : null;
+
     return `
       <div class="debt-row">
         <div>
           <div class="debt-name">${d.ower} owes ${d.payer}</div>
-          <div class="debt-desc">${d.desc}</div>
+          <div class="debt-desc">${d.desc} &middot; ${outingDate}</div>
+          ${settledDate ? `<div class="debt-desc">Paid on ${settledDate}</div>` : ""}
         </div>
         <div class="debt-row-right">
-          <span class="debt-badge ${d.settled ? "badge-settled" : "badge-owes"}">${Format.currency(d.amount)}</span>
+          <span class="debt-badge ${badgeClass}">${Format.currency(d.amount)}</span>
+          ${!d.settled ? `<button class="btn-secondary edit-btn" data-index="${i}" style="font-size: 12px; padding: 5px 10px;">Edit</button>` : ""}
           <button class="btn-secondary settle-btn" data-index="${i}" style="font-size: 12px; padding: 5px 10px;">
             ${d.settled ? "Undo" : "Paid"}
           </button>
+          ${d.settled ? `<button class="btn-secondary remove-btn" data-index="${i}" style="font-size: 12px; padding: 5px 10px;">Remove</button>` : ""}
         </div>
       </div>
     `;

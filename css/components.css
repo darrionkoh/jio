@@ -1,4 +1,4 @@
-/* ─── Cards ─────────────────────────────────────────────────── */
+/* Cards */
 
 .card {
   background: var(--color-bg);
@@ -17,7 +17,7 @@
   margin-bottom: 12px;
 }
 
-/* ─── Panels ────────────────────────────────────────────────── */
+/* Panels */
 
 .panel {
   display: none;
@@ -27,7 +27,7 @@
   display: block;
 }
 
-/* ─── Buttons ───────────────────────────────────────────────── */
+/* Buttons */
 
 .btn-primary {
   display: block;
@@ -81,7 +81,7 @@
   color: var(--color-red);
 }
 
-/* ─── Toggle Buttons ────────────────────────────────────────── */
+/* Toggle buttons */
 
 .toggle-row {
   display: flex;
@@ -109,7 +109,7 @@
   background: var(--color-blue-light);
 }
 
-/* ─── Inputs ────────────────────────────────────────────────── */
+/* Inputs */
 
 input[type="text"],
 input[type="number"] {
@@ -134,7 +134,7 @@ input::placeholder {
   color: var(--color-text-tertiary);
 }
 
-/* ─── Row layout ────────────────────────────────────────────── */
+/* Row layout */
 
 .row {
   display: flex;
@@ -147,7 +147,7 @@ input::placeholder {
   flex: 1;
 }
 
-/* ─── Result rows ───────────────────────────────────────────── */
+/* Result rows */
 
 .result-row {
   display: flex;
@@ -176,7 +176,7 @@ input::placeholder {
   color: var(--color-text);
 }
 
-/* ─── Metric cards ──────────────────────────────────────────── */
+/* Metric cards */
 
 .metrics-grid {
   display: grid;
@@ -208,7 +208,7 @@ input::placeholder {
   margin-top: 4px;
 }
 
-/* ─── Breakdown box ─────────────────────────────────────────── */
+/* Breakdown box */
 
 .breakdown-box {
   background: var(--color-bg-secondary);
@@ -218,7 +218,7 @@ input::placeholder {
   margin-top: 10px;
 }
 
-/* ─── Avatar ────────────────────────────────────────────────── */
+/* Avatar */
 
 .avatar {
   width: 32px;
@@ -234,7 +234,7 @@ input::placeholder {
   flex-shrink: 0;
 }
 
-/* ─── Person tags (assignee pills) ──────────────────────────── */
+/* Person tags */
 
 .person-tag {
   display: inline-block;
@@ -256,7 +256,7 @@ input::placeholder {
   font-weight: 500;
 }
 
-/* ─── Person split row ──────────────────────────────────────── */
+/* Person split row */
 
 .person-split {
   display: flex;
@@ -277,7 +277,7 @@ input::placeholder {
   gap: 10px;
 }
 
-/* ─── Debt rows ─────────────────────────────────────────────── */
+/* Debt rows */
 
 .debt-row {
   display: flex;
@@ -319,8 +319,8 @@ input::placeholder {
 }
 
 .badge-owes {
-  background: var(--color-red-light);
-  color: var(--color-red);
+  background: #FFF3CD;
+  color: #856404;
 }
 
 .badge-settled {
@@ -329,7 +329,17 @@ input::placeholder {
   text-decoration: line-through;
 }
 
-/* ─── Section label (settled divider) ──────────────────────── */
+.badge-aging {
+  background: #FF5F15;
+  color: #eedeac;
+}
+
+.badge-old {
+  background: #4a0000;
+  color: #ffcccc;
+}
+
+/* Section divider */
 
 .section-divider {
   font-size: 11px;
@@ -339,7 +349,7 @@ input::placeholder {
   padding: 12px 0 4px;
 }
 
-/* ─── Empty state ───────────────────────────────────────────── */
+/* Empty state */
 
 .empty-state {
   text-align: center;
@@ -348,7 +358,7 @@ input::placeholder {
   font-size: 14px;
 }
 
-/* ─── Map ───────────────────────────────────────────────────── */
+/* Map */
 
 .map-frame {
   width: 100%;
@@ -358,21 +368,21 @@ input::placeholder {
   display: block;
 }
 
-/* ─── Hint text ─────────────────────────────────────────────── */
+/* Hint text */
 
 .hint {
   font-size: 12px;
   color: var(--color-text-tertiary);
 }
 
-/* ─── Full-width input ──────────────────────────────────────── */
+/* Full-width input */
 
 .input-full {
   width: 100%;
   margin-bottom: 8px;
 }
 
-/* ─── Large input (GST) ─────────────────────────────────────── */
+/* Large input (GST) */
 
 .input-large {
   font-size: 28px;
