@@ -1,46 +1,76 @@
 const App = (() => {
-  const TABS = ["bill", "gst", "debts", "spin"];
+  const FEATURES = ["bill", "gst", "debts", "spin", "events"];
 
-  const COMPONENTS = {
-    bill: Bill,
-    gst: GST,
-    debts: Debts,
-    spin: Spin,
+  const DOM = {
+    launcher: null,
+    backBtn: null,
+    subtitle: null,
+    panels: {}
   };
 
-  // Switch tabs
+  const init = () => {
+    DOM.launcher = document.getElementById("launcher");
+    DOM.backBtn = document.getElementById("back-btn");
+    DOM.subtitle = document.getElementById("app-subtitle");
 
-  function switchTab(target) {
-    // Update tab buttons
-    document.querySelectorAll(".tab").forEach((btn) => {
-      btn.classList.toggle("active", btn.dataset.tab === target);
+    FEATURES.forEach(id => {
+      DOM.panels[id] = document.getElementById(`panel-${id}`);
     });
 
-    // Update panels
-    TABS.forEach((id) => {
-      document
-        .getElementById(`panel-${id}`)
-        .classList.toggle("active", id === target);
+    try {
+      if (typeof Bill !== 'undefined') Bill.render();
+      if (typeof GST !== 'undefined') GST.render();
+      if (typeof Debts !== 'undefined') Debts.render();
+      if (typeof Spin !== 'undefined') Spin.render();
+    } catch (error) {
+      console.warn("Module Error:", error.message);
+    }
+
+    bindEvents();
+
+    goHome();
+  };
+
+  const bindEvents = () => {
+    document.querySelectorAll(".feature-card").forEach(card => {
+      card.addEventListener("click", () => {
+        const target = card.getAttribute("data-tab");
+        if (target) showFeature(target);
+      });
     });
-  }
 
-  // init app
+    if (DOM.backBtn) {
+      DOM.backBtn.addEventListener("click", goHome);
+    }
+  };
 
-  function init() {
-    // Render all components into their panels
-    Object.values(COMPONENTS).forEach((component) => component.render());
+  const showFeature = (targetId) => {
+    if (DOM.launcher) DOM.launcher.style.display = "none";
+    if (DOM.subtitle) DOM.subtitle.style.display = "none";
+    if (DOM.backBtn) DOM.backBtn.style.display = "block";
 
-    // Bind tab buttons
-    document.querySelectorAll(".tab").forEach((btn) => {
-      btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+    FEATURES.forEach(id => {
+      const panel = DOM.panels[id];
+      if (panel) {
+        panel.style.display = (id === targetId) ? "block" : "none";
+      }
     });
 
-    // Start on bill splitter
-    switchTab("bill");
-  }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const goHome = () => {
+    if (DOM.launcher) DOM.launcher.style.display = "grid";
+    if (DOM.subtitle) DOM.subtitle.style.display = "block";
+    if (DOM.backBtn) DOM.backBtn.style.display = "none";
+
+    FEATURES.forEach(id => {
+      const panel = DOM.panels[id];
+      if (panel) panel.style.display = "none";
+    });
+  };
 
   return { init };
 })();
 
-// Boot
 document.addEventListener("DOMContentLoaded", App.init);

@@ -8,7 +8,7 @@
   <link rel="icon" type="image/svg+xml" href="/src/assets/jioicon.png" />
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/components.css" />
-  <link rel="stylesheet" href="css/tabs.css" />
+  <link rel="stylesheet" href="css/homepage.css" />
 </head>
 
 <body>
@@ -16,24 +16,44 @@
 
     <!-- header -->
     <header class="app-header">
+      <button id="back-btn" class="back-btn" style="display: none;" aria-label="Go back">
+        <span class="chevron-left"></span>
+      </button>
       <h1 class="app-title">Jio!</h1>
-      <p class="app-sub">Going out in Singapore? We got you.</p>
+      <p class="app-sub" id="app-subtitle">Going out in Singapore? We got you.</p>
     </header>
 
-    <!-- tabs -->
-    <nav class="tabs" id="tabs">
-      <button class="tab active" data-tab="bill">Bill<br />Splitter</button>
-      <button class="tab" data-tab="gst">GST<br />Calculator</button>
-      <button class="tab" data-tab="debts">Owe Money<br />Pay Money</button>
-      <button class="tab" data-tab="spin">Spin The<br />Wheel</button>
-    </nav>
+    <main id="main-content">
+      <!-- Launcher View -->
+      <div id="launcher" class="launcher-grid">
+        <div class="feature-card" data-tab="bill">
+          <span class="feature-emoji">🧾</span>
+          <span class="feature-label">Bill Splitter</span>
+        </div>
+        <div class="feature-card" data-tab="gst">
+          <span class="feature-emoji">🔢</span>
+          <span class="feature-label">GST Calculator</span>
+        </div>
+        <div class="feature-card" data-tab="debts">
+          <span class="feature-emoji">🤝</span>
+          <span class="feature-label">Owe Money Pay Money</span>
+        </div>
+        <div class="feature-card" data-tab="spin">
+          <span class="feature-emoji">🎰</span>
+          <span class="feature-label">Spin The Wheel</span>
+        </div>
+        <!-- <div class="feature-card" data-tab="events">
+          <span class="feature-emoji">📅</span>
+          <span class="feature-label">Events</span>
+        </div> -->
+      </div>
 
-    <!-- panels -->
-    <main>
-      <div id="panel-bill" class="panel active"></div>
-      <div id="panel-gst" class="panel"></div>
-      <div id="panel-debts" class="panel"></div>
-      <div id="panel-spin" class="panel"></div>
+      <!-- Feature Panels (Hidden initially) -->
+      <div id="panel-bill" class="panel" style="display: none;"></div>
+      <div id="panel-gst" class="panel" style="display: none;"></div>
+      <div id="panel-debts" class="panel" style="display: none;"></div>
+      <div id="panel-spin" class="panel" style="display: none;"></div>
+      <!-- <div id="panel-events" class="panel" style="display: none;"></div> -->
     </main>
 
   </div>
