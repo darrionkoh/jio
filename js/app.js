@@ -22,8 +22,9 @@ const App = (() => {
       if (typeof GST !== 'undefined') GST.render();
       if (typeof Debts !== 'undefined') Debts.render();
       if (typeof Spin !== 'undefined') Spin.render();
+      if (typeof Events !== 'undefined') Events.render();
     } catch (error) {
-      console.warn("Module Error:", error.message);
+      console.error("Module Error:", error.message);
     }
 
     bindEvents();

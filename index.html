@@ -42,10 +42,10 @@
           <span class="feature-emoji">🎰</span>
           <span class="feature-label">Spin The Wheel</span>
         </div>
-        <!-- <div class="feature-card" data-tab="events">
+        <div class="feature-card" data-tab="events">
           <span class="feature-emoji">📅</span>
           <span class="feature-label">Events</span>
-        </div> -->
+        </div>
       </div>
 
       <!-- Feature Panels (Hidden initially) -->
@@ -53,7 +53,7 @@
       <div id="panel-gst" class="panel" style="display: none;"></div>
       <div id="panel-debts" class="panel" style="display: none;"></div>
       <div id="panel-spin" class="panel" style="display: none;"></div>
-      <!-- <div id="panel-events" class="panel" style="display: none;"></div> -->
+      <div id="panel-events" class="panel" style="display: none;"></div>
     </main>
 
   </div>
@@ -63,6 +63,19 @@
     Made by Darrion Koh &middot; 2026 &middot; Ver 1.1.1 &copy; All rights reserved.
   </footer>
 
+  <!-- load spb lib -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- init connection -->
+  <script>
+    if (typeof window.supabaseClient === 'undefined') {
+      const _supabaseUrl = 'https://kczcoglntvodrworiyty.supabase.co';
+      const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjemNvZ2xudHZvZHJ3b3JpeXR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3Njc1NDcsImV4cCI6MjA5MzM0MzU0N30.cg7j-COxPj7TVn4OjHSqtbGsGkz0fjPJ3eKCjz2G2JU';
+
+      window.supabase = supabase.createClient(_supabaseUrl, _supabaseKey);
+    }
+  </script>
+
   <!-- utils -->
   <script src="js/utils/format.js"></script>
 
@@ -71,6 +84,7 @@
   <script src="js/components/gst.js"></script>
   <script src="js/components/debts.js"></script>
   <script src="js/components/spin.js"></script>
+  <script src="js/components/events.js"></script>
 
   <script src="js/app.js"></script>
 </body>
