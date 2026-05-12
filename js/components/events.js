@@ -1,5 +1,4 @@
 const Events = (() => {
-    // generate random 4-digit JIO-XXXX code
     const generateCode = () => {
         const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
         let result = "";
@@ -25,41 +24,52 @@ const Events = (() => {
       <div class="card">
         <div class="card-title">Create New Event</div>
         <div class="form-group" style="display: flex; flex-direction: column; gap: 12px;">
-          <input type="text" id="ev-title" placeholder="Event Name (e.g. Dinner @ JB)" />
+          <input type="text" id="ev-host" placeholder="Your Name (Organizer)" />
+          <input type="text" id="ev-title" placeholder="Event Name (e.g. Dinner @ Orchard)" />
           
           <div style="display: flex; gap: 10px;">
-            <input type="date" id="ev-date" />
-            <input type="time" id="ev-time" />
-          </div>
+            <input type="date" id="ev-date" placeholder="Select Date" />
+            <input type="time" id="ev-time" placeholder="Select Time" />
+          </div> 
 
-          <input type="text" id="ev-loc" placeholder="Location (e.g. Mid Valley)" />
-          
-          <textarea id="ev-desc" placeholder="Notes (e.g. Meet at Exit B)"></textarea>
+          <input type="text" id="ev-loc" placeholder="Location (e.g. Ion Orchard)" />
+          <textarea id="ev-desc" placeholder="Notes (e.g. Meet at Exit B)" style="height: 80px;"></textarea>
           
           <button class="btn-secondary" id="create-event-btn" style="padding: 14px;">Create & Get Code</button>
         </div>
       </div>
 
-      <!-- Detail Card (Result) -->
       <div id="event-result-card" class="card" style="display: none; text-align: center; border: 2px solid var(--color-blue);">
-        <div class="badge-owes" id="res-code-display" style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: var(--color-blue-light); color: var(--color-blue); font-weight: bold; margin-bottom: 12px;"></div>
+        <div id="res-code-display" style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: var(--color-blue-light); color: var(--color-blue); font-weight: bold; margin-bottom: 12px;"></div>
+        
         <h2 id="res-title" style="margin: 0 0 5px 0;"></h2>
+        <p id="res-host" style="font-size: 12px; font-weight: 600; color: var(--color-blue); margin-bottom: 8px;"></p>
         <p id="res-details" style="font-size: 14px; opacity: 0.8; margin-bottom: 10px;"></p>
         <p id="res-desc" style="font-style: italic; font-size: 13px; margin-bottom: 20px;"></p>
-        <button class="btn-primary" id="add-to-cal-btn" style="width: 100%;">Add to Calendar</button>
+        
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button class="btn-primary" id="add-to-cal-btn" style="width: 100%;">Add to Calendar</button>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn-secondary" id="native-share-btn" style="flex: 1;">Share</button>
+                <button class="btn-secondary" id="copy-code-btn" style="flex: 1;">Copy Code</button>
+            </div>
+            <button id="delete-event-btn" style="width: 100%; margin-top: 12px; background: none; border: none; color: #ff3b30; font-size: 13px; cursor: pointer; text-decoration: underline;">Delete Event</button>
+        </div>
       </div>
     `;
 
         bindEvents();
+        checkLocalStorage();
     };
 
     const bindEvents = () => {
-        document.getElementById("create-event-btn").addEventListener("click", handleCreate);
-        document.getElementById("join-event-btn").addEventListener("click", handleJoin);
+        document.getElementById("create-event-btn").onclick = handleCreate;
+        document.getElementById("join-event-btn").onclick = handleJoin;
     };
 
     const handleCreate = async () => {
         const eventData = {
+            host_name: document.getElementById("ev-host").value.trim() || "Someone",
             title: document.getElementById("ev-title").value.trim(),
             date: document.getElementById("ev-date").value,
             time: document.getElementById("ev-time").value,
@@ -68,78 +78,99 @@ const Events = (() => {
             code: generateCode()
         };
 
-        if (!eventData.title || !eventData.date || !eventData.time) {
-            return alert("Wait! Give us at least a title, date, and time.");
-        }
+        if (!eventData.title || !eventData.date || !eventData.time) return alert("Fill in Date, Time and Title!");
 
-        // save data
-        const { error } = await supabase
-            .from('events')
-            .insert([eventData]);
-
+        const { error } = await supabase.from('events').insert([eventData]);
         if (error) {
-            console.error("Supabase Error:", error);
-            alert("Failed to save event. Check your internet or Supabase setup!");
+            alert("Database error!");
         } else {
-            showEventData(eventData);
-            document.getElementById("ev-title").value = "";
-            document.getElementById("ev-desc").value = "";
+            saveAndShow(eventData);
         }
     };
 
     const handleJoin = async () => {
-        const code = document.getElementById("join-code-input").value.trim().toUpperCase();
-        if (!code) return;
+        const codeInput = document.getElementById("join-code-input");
+        const code = codeInput.value.trim().toUpperCase();
+        const { data } = await supabase.from('events').select('*').eq('code', code).single();
+        if (data) saveAndShow(data); else alert("Code not found!");
+    };
 
-        const { data, error } = await supabase
-            .from('events')
-            .select('*')
-            .eq('code', code)
-            .single();
+    const saveAndShow = (ev) => {
+        localStorage.setItem("jio_saved_event", JSON.stringify(ev));
+        showEventData(ev);
+    };
 
-        if (data) {
-            showEventData(data);
-        } else {
-            alert("No event found with that code. Try again!");
-        }
+    const checkLocalStorage = () => {
+        const saved = localStorage.getItem("jio_saved_event");
+        if (saved) showEventData(JSON.parse(saved));
     };
 
     const showEventData = (ev) => {
         const card = document.getElementById("event-result-card");
+        card.style.display = "block";
+
         document.getElementById("res-code-display").textContent = ev.code;
         document.getElementById("res-title").textContent = ev.title;
-        document.getElementById("res-details").textContent = `${ev.date} at ${ev.time} | ${ev.location}`;
-        document.getElementById("res-desc").textContent = ev.description || "No extra notes.";
+        document.getElementById("res-host").textContent = `Organized by: ${ev.host_name || 'Organizer'}`;
+        document.getElementById("res-details").textContent = `${ev.date} @ ${ev.time} | ${ev.location}`;
+        document.getElementById("res-desc").textContent = ev.description;
 
-        card.style.display = "block";
-        card.scrollIntoView({ behavior: 'smooth' });
+        const shareText = `Jio! ${ev.title}\nDate: ${ev.date} @ ${ev.time}\nLocation: ${ev.location}\nCode: ${ev.code}`;
+
+        document.getElementById("copy-code-btn").onclick = () => {
+            navigator.clipboard.writeText(ev.code);
+            alert("Code copied!");
+        };
+
+        document.getElementById("native-share-btn").onclick = async () => {
+            if (navigator.share) {
+                try {
+                    await navigator.share({ title: ev.title, text: shareText, url: window.location.href });
+                } catch (err) { console.log("Share cancelled"); }
+            } else {
+                navigator.clipboard.writeText(shareText);
+                alert("Event details copied!");
+            }
+        };
 
         document.getElementById("add-to-cal-btn").onclick = () => downloadICS(ev);
+
+        document.getElementById("delete-event-btn").onclick = async () => {
+            const userInput = prompt("Is this event over? Type 'DELETE' to confirm and remove it for everyone. NOTE: This action will remove the event from our database and cannot be undone.");
+            if (userInput === "DELETE") {
+                const { error } = await supabase.from('events').delete().eq('code', ev.code);
+                if (!error) {
+                    localStorage.removeItem("jio_saved_event");
+                    alert("Event successfully deleted.");
+                    render();
+                } else {
+                    alert("Error deleting event.");
+                }
+            } else if (userInput !== null) {
+                alert("Incorrect confirmation text. Event not deleted.");
+            }
+        };
     };
 
     const downloadICS = (ev) => {
-        // Format: YYYYMMDDTHHMMSS
         const dateStr = ev.date.replace(/-/g, '');
         const timeStr = ev.time.replace(/:/g, '');
-
-        const icsContent = [
-            "BEGIN:VCALENDAR",
-            "VERSION:2.0",
-            "BEGIN:VEVENT",
+        const icsBody = [
+            "BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT",
             `SUMMARY:${ev.title}`,
             `DTSTART:${dateStr}T${timeStr}00`,
             `LOCATION:${ev.location}`,
-            `DESCRIPTION:${ev.description || ''} (Invite Code: ${ev.code})`,
-            "END:VEVENT",
-            "END:VCALENDAR"
+            `DESCRIPTION:Host: ${ev.host_name}\\nNotes: ${ev.description}`,
+            "END:VEVENT", "END:VCALENDAR"
         ].join("\n");
 
-        const blob = new Blob([icsContent], { type: "text/calendar" });
-        const url = URL.createObjectURL(blob);
+        const uri = "data:text/calendar;charset=utf8," + encodeURIComponent(icsBody);
         const link = document.createElement("a");
-        link.href = url;
-        link.download = `${ev.title}.ics`;
+        link.href = uri;
+        link.download = "event.ics";
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
     };
 
     return { render };
