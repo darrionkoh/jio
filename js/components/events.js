@@ -1,7 +1,6 @@
 const Events = (() => {
-    // today's date in YYYY-MM-DD format
     function todayStr() {
-    return new Date().toISOString().split("T")[0];
+        return new Date().toISOString().split("T")[0];
     }
 
     const generateCode = () => {
@@ -33,8 +32,8 @@ const Events = (() => {
           <input type="text" id="ev-title" placeholder="Event Name (e.g. Dinner @ Orchard)" />
           
           <div style="display: flex; gap: 10px;">
-            <input type="date" id="ev-date" value="${todayStr()}" min="${todayStr()}" />
-            <input type="time" id="ev-time" value="00:00" />
+            <input type="date" id="ev-date" class="custom-picker" min="${todayStr()}" required />
+            <input type="time" id="ev-time" class="custom-picker" required />
           </div> 
 
           <input type="text" id="ev-loc" placeholder="Location (e.g. Ion Orchard)" />
@@ -83,7 +82,9 @@ const Events = (() => {
             code: generateCode()
         };
 
-        if (!eventData.title || !eventData.date || !eventData.time) return alert("Fill in Date, Time and Title!");
+        if (!eventData.title || !eventData.date || !eventData.time || !eventData.location) {
+            return alert("Error: Please fill in Title, Date, Time, and Location!");
+        }
 
         const { error } = await supabase.from('events').insert([eventData]);
         if (error) {
@@ -141,7 +142,7 @@ const Events = (() => {
         document.getElementById("add-to-cal-btn").onclick = () => downloadICS(ev);
 
         document.getElementById("delete-event-btn").onclick = async () => {
-            const userInput = prompt("Is this event over? Type 'DELETE' to confirm and remove it for everyone. NOTE: This action will remove the event from our database and cannot be undone.");
+            const userInput = prompt("Is this event over? Type 'DELETE' to confirm and remove it for everyone.");
             if (userInput === "DELETE") {
                 const { error } = await supabase.from('events').delete().eq('code', ev.code);
                 if (!error) {
