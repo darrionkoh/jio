@@ -1,4 +1,9 @@
 const Events = (() => {
+    // today's date in YYYY-MM-DD format
+    function todayStr() {
+    return new Date().toISOString().split("T")[0];
+    }
+
     const generateCode = () => {
         const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
         let result = "";
@@ -28,8 +33,8 @@ const Events = (() => {
           <input type="text" id="ev-title" placeholder="Event Name (e.g. Dinner @ Orchard)" />
           
           <div style="display: flex; gap: 10px;">
-            <input type="date" id="ev-date" placeholder="Select Date" />
-            <input type="time" id="ev-time" placeholder="Select Time" />
+            <input type="date" id="ev-date" value="${todayStr()}" min="${todayStr()}" />
+            <input type="time" id="ev-time" value="00:00" />
           </div> 
 
           <input type="text" id="ev-loc" placeholder="Location (e.g. Ion Orchard)" />
