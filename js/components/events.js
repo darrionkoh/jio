@@ -1,8 +1,10 @@
 const Events = (() => {
+    // todays date
     function todayStr() {
         return new Date().toISOString().split("T")[0];
     }
-
+    
+    // generates code
     const generateCode = () => {
         const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
         let result = "";
@@ -43,23 +45,7 @@ const Events = (() => {
         </div>
       </div>
 
-      <div id="event-result-card" class="card" style="display: none; text-align: center; border: 2px solid var(--color-blue);">
-        <div id="res-code-display" style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: var(--color-blue-light); color: var(--color-blue); font-weight: bold; margin-bottom: 12px;"></div>
-        
-        <h2 id="res-title" style="margin: 0 0 5px 0;"></h2>
-        <p id="res-host" style="font-size: 12px; font-weight: 600; color: var(--color-blue); margin-bottom: 8px;"></p>
-        <p id="res-details" style="font-size: 14px; opacity: 0.8; margin-bottom: 10px;"></p>
-        <p id="res-desc" style="font-style: italic; font-size: 13px; margin-bottom: 20px;"></p>
-        
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-            <button class="btn-primary" id="add-to-cal-btn" style="width: 100%;">Add to Calendar</button>
-            <div style="display: flex; gap: 8px;">
-                <button class="btn-secondary" id="native-share-btn" style="flex: 1;">Share</button>
-                <button class="btn-secondary" id="copy-code-btn" style="flex: 1;">Copy Code</button>
-            </div>
-            <button id="delete-event-btn" style="width: 100%; margin-top: 12px; background: none; border: none; color: #ff3b30; font-size: 13px; cursor: pointer; text-decoration: underline;">Delete Event</button>
-        </div>
-      </div>
+      <div id="events-list-container"></div>
     `;
 
         bindEvents();
@@ -83,82 +69,127 @@ const Events = (() => {
         };
 
         if (!eventData.title || !eventData.date || !eventData.time || !eventData.location) {
-            return alert("Error: Please fill in Title, Date, Time, and Location!");
+            return alert("HELLO! FILL IN ALL THE FIELDS LAH! (Except description, that one can skip)");
         }
 
         const { error } = await supabase.from('events').insert([eventData]);
         if (error) {
             alert("Database error!");
         } else {
-            saveAndShow(eventData);
+            saveAndRefresh(eventData);
         }
     };
 
     const handleJoin = async () => {
         const codeInput = document.getElementById("join-code-input");
         const code = codeInput.value.trim().toUpperCase();
+        if (!code) return;
+
         const { data } = await supabase.from('events').select('*').eq('code', code).single();
-        if (data) saveAndShow(data); else alert("Code not found!");
+        if (data) {
+            saveAndRefresh(data);
+            codeInput.value = ""; 
+        } else {
+            alert("Err, cannot find event with that code leh. Confirm again?");
+        }
     };
 
-    const saveAndShow = (ev) => {
-        localStorage.setItem("jio_saved_event", JSON.stringify(ev));
-        showEventData(ev);
+    const saveAndRefresh = (newEvent) => {
+        let events = JSON.parse(localStorage.getItem("jio_saved_events") || "[]");
+        
+        // prevent dupes
+        const exists = events.find(e => e.code === newEvent.code);
+        if (!exists) {
+            events.push(newEvent);
+            localStorage.setItem("jio_saved_events", JSON.stringify(events));
+        }
+        
+        renderEventsList(events);
     };
 
     const checkLocalStorage = () => {
-        const saved = localStorage.getItem("jio_saved_event");
-        if (saved) showEventData(JSON.parse(saved));
+        const events = JSON.parse(localStorage.getItem("jio_saved_events") || "[]");
+        if (events.length > 0) renderEventsList(events);
     };
 
-    const showEventData = (ev) => {
-        const card = document.getElementById("event-result-card");
-        card.style.display = "block";
+    const renderEventsList = (events) => {
+        const listContainer = document.getElementById("events-list-container");
+        if (!listContainer) return;
 
-        document.getElementById("res-code-display").textContent = ev.code;
-        document.getElementById("res-title").textContent = ev.title;
-        document.getElementById("res-host").textContent = `Organized by: ${ev.host_name || 'Organizer'}`;
-        document.getElementById("res-details").textContent = `${ev.date} @ ${ev.time} | ${ev.location}`;
-        document.getElementById("res-desc").textContent = ev.description;
+        // sort by most upcoming date
+        events.sort((a, b) => {
+            const dateTimeA = new Date(`${a.date}T${a.time}`);
+            const dateTimeB = new Date(`${b.date}T${b.time}`);
+            return dateTimeA - dateTimeB;
+        });
 
-        const shareText = `Jio! ${ev.title}\nDate: ${ev.date} @ ${ev.time}\nLocation: ${ev.location}\nCode: ${ev.code}`;
+        listContainer.innerHTML = events.map(ev => `
+            <div class="card event-item" style="text-align: center; border: 2px solid var(--color-blue); margin-bottom: 16px;">
+                <div style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: var(--color-blue-light); color: var(--color-blue); font-weight: bold; margin-bottom: 12px;">${ev.code}</div>
+                <h2 style="margin: 0 0 5px 0;">${ev.title}</h2>
+                <p style="font-size: 12px; font-weight: 600; color: var(--color-blue); margin-bottom: 8px;">Organized by: ${ev.host_name || 'Organizer'}</p>
+                <p style="font-size: 14px; opacity: 0.8; margin-bottom: 10px;">${ev.date} @ ${ev.time} | ${ev.location}</p>
+                <p style="font-style: italic; font-size: 13px; margin-bottom: 20px;">${ev.description}</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button class="btn-primary" onclick="Events.downloadICSByData('${encodeURIComponent(JSON.stringify(ev))}')" style="width: 100%;">Add to Calendar</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-secondary" onclick="Events.shareEvent('${ev.title}', '${ev.date}', '${ev.time}', '${ev.location}', '${ev.code}')" style="flex: 1;">Share</button>
+                        <button class="btn-secondary" onclick="Events.copyCode('${ev.code}')" style="flex: 1;">Copy Code</button>
+                    </div>
+                    <button onclick="Events.deleteEvent('${ev.code}')" style="width: 100%; margin-top: 12px; background: none; border: none; color: #ff3b30; font-size: 13px; cursor: pointer; text-decoration: underline;">Delete Event</button>
+                </div>
+            </div>
+        `).join('');
+    };
 
-        document.getElementById("copy-code-btn").onclick = () => {
-            navigator.clipboard.writeText(ev.code);
-            alert("Code copied!");
-        };
+    const copyCode = (code) => {
+        navigator.clipboard.writeText(code);
+        alert("Event code copied already! Faster share with your friends: " + code);
+    };
 
-        document.getElementById("native-share-btn").onclick = async () => {
-            if (navigator.share) {
-                try {
-                    await navigator.share({ title: ev.title, text: shareText, url: window.location.href });
-                } catch (err) { console.log("Share cancelled"); }
+    const shareEvent = async (title, date, time, location, code) => {
+        const shareMessage = `Eh! Someone invited you to an event: ${title}!\n\n` +
+                             `📅 Date: ${date} @ ${time}\n` +
+                             `📍 Location: ${location}\n\n` +
+                             `To join, add code "${code}" via the Events tab! :\n` +
+                             `https://darrion-jio.vercel.app/`;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({ 
+                    title: `Jio: ${title}`, 
+                    text: shareMessage 
+                });
+            } catch (err) {
+                console.log("Share cancelled or failed");
+            }
+        } else {
+            navigator.clipboard.writeText(shareMessage);
+            alert("Copied event details liao la! Share it with your friends: \n\n" + shareMessage);
+        }
+    };
+
+    const deleteEvent = async (code) => {
+        const userInput = prompt("Double confirm event over already? Type 'DELETE' to remove for everyone.");
+        if (userInput === "DELETE") {
+            const { error } = await supabase.from('events').delete().eq('code', code);
+            if (!error) {
+                let events = JSON.parse(localStorage.getItem("jio_saved_events") || "[]");
+                events = events.filter(e => e.code !== code);
+                localStorage.setItem("jio_saved_events", JSON.stringify(events));
+                alert("Event deleted liao!");
+                render(); 
             } else {
-                navigator.clipboard.writeText(shareText);
-                alert("Event details copied!");
+                alert("Got problem leh, cannot delete!");
             }
-        };
-
-        document.getElementById("add-to-cal-btn").onclick = () => downloadICS(ev);
-
-        document.getElementById("delete-event-btn").onclick = async () => {
-            const userInput = prompt("Is this event over? Type 'DELETE' to confirm and remove it for everyone.");
-            if (userInput === "DELETE") {
-                const { error } = await supabase.from('events').delete().eq('code', ev.code);
-                if (!error) {
-                    localStorage.removeItem("jio_saved_event");
-                    alert("Event successfully deleted.");
-                    render();
-                } else {
-                    alert("Error deleting event.");
-                }
-            } else if (userInput !== null) {
-                alert("Incorrect confirmation text. Event not deleted.");
-            }
-        };
+        } else if (userInput !== null) {
+            alert("Dunno how spell DELETE ah? Event not deleted.");
+        }
     };
 
-    const downloadICS = (ev) => {
+    const downloadICSByData = (encodedData) => {
+        const ev = JSON.parse(decodeURIComponent(encodedData));
         const dateStr = ev.date.replace(/-/g, '');
         const timeStr = ev.time.replace(/:/g, '');
         const icsBody = [
@@ -173,11 +204,11 @@ const Events = (() => {
         const uri = "data:text/calendar;charset=utf8," + encodeURIComponent(icsBody);
         const link = document.createElement("a");
         link.href = uri;
-        link.download = "event.ics";
+        link.download = `${ev.title}.ics`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     };
 
-    return { render };
+    return { render, copyCode, shareEvent, deleteEvent, downloadICSByData };
 })();
