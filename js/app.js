@@ -29,7 +29,12 @@ const App = (() => {
 
     bindEvents();
 
-    goHome();
+    const lastTab = sessionStorage.getItem("last_tab");
+    if (lastTab && FEATURES.includes(lastTab)) {
+      showFeature(lastTab);
+    } else {
+      goHome();
+    }
   };
 
   const bindEvents = () => {
@@ -46,6 +51,8 @@ const App = (() => {
   };
 
   const showFeature = (targetId) => {
+    sessionStorage.setItem("last_tab", targetId);
+
     if (DOM.launcher) DOM.launcher.style.display = "none";
     if (DOM.subtitle) DOM.subtitle.style.display = "none";
     if (DOM.backBtn) DOM.backBtn.style.display = "block";
@@ -61,6 +68,8 @@ const App = (() => {
   };
 
   const goHome = () => {
+    sessionStorage.removeItem("last_tab");
+
     if (DOM.launcher) DOM.launcher.style.display = "grid";
     if (DOM.subtitle) DOM.subtitle.style.display = "block";
     if (DOM.backBtn) DOM.backBtn.style.display = "none";
