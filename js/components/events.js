@@ -1,10 +1,8 @@
 const Events = (() => {
-    // todays date
     function todayStr() {
         return new Date().toISOString().split("T")[0];
     }
     
-    // generates code
     const generateCode = () => {
         const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
         let result = "";
@@ -20,10 +18,14 @@ const Events = (() => {
 
         container.innerHTML = `
       <div class="card">
-        <div class="card-title">Join an Event</div>
-        <div style="display: flex; gap: 10px;">
-          <input type="text" id="join-code-input" placeholder="JIO-XXXX" style="text-transform: uppercase; flex: 2;" />
-          <button class="btn-primary" id="join-event-btn" style="flex: 1;">Join</button>
+        <div class="card-title">JOIN AN EVENT</div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <div style="flex: 2; display: flex; align-items: center; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; padding: 0 12px; height: 48px;">
+            <span style="color: #888; font-family: monospace; font-weight: bold; margin-right: 2px; user-select: none;">JIO-</span>
+            <input type="text" id="join-code-input" placeholder="XXXX" maxlength="4" 
+                   style="background: transparent; border: none; outline: none; color: white; font-family: monospace; font-size: 16px; width: 100%; text-transform: uppercase;" />
+          </div>
+          <button class="btn-primary" id="join-event-btn" style="flex: 1; height: 48px; margin: 0;">Join</button>
         </div>
       </div>
 
@@ -82,28 +84,27 @@ const Events = (() => {
 
     const handleJoin = async () => {
         const codeInput = document.getElementById("join-code-input");
-        const code = codeInput.value.trim().toUpperCase();
-        if (!code) return;
+        const suffix = codeInput.value.trim().toUpperCase();
+        if (!suffix) return;
 
-        const { data } = await supabase.from('events').select('*').eq('code', code).single();
+        const fullCode = `JIO-${suffix}`;
+
+        const { data } = await supabase.from('events').select('*').eq('code', fullCode).single();
         if (data) {
             saveAndRefresh(data);
             codeInput.value = ""; 
         } else {
-            alert("Err, cannot find event with that code leh. Confirm again?");
+            alert("Err, cannot find ID '" + suffix + "' leh. Confirm correct?");
         }
     };
 
     const saveAndRefresh = (newEvent) => {
         let events = JSON.parse(localStorage.getItem("jio_saved_events") || "[]");
-        
-        // prevent dupes
         const exists = events.find(e => e.code === newEvent.code);
         if (!exists) {
             events.push(newEvent);
             localStorage.setItem("jio_saved_events", JSON.stringify(events));
         }
-        
         renderEventsList(events);
     };
 
@@ -116,16 +117,17 @@ const Events = (() => {
         const listContainer = document.getElementById("events-list-container");
         if (!listContainer) return;
 
-        // sort by most upcoming date
         events.sort((a, b) => {
             const dateTimeA = new Date(`${a.date}T${a.time}`);
             const dateTimeB = new Date(`${b.date}T${b.time}`);
             return dateTimeA - dateTimeB;
         });
 
-        listContainer.innerHTML = events.map(ev => `
+        listContainer.innerHTML = events.map(ev => {
+            const shortCode = ev.code.split('-')[1];
+            return `
             <div class="card event-item" style="text-align: center; border: 2px solid var(--color-blue); margin-bottom: 16px;">
-                <div style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: var(--color-blue-light); color: var(--color-blue); font-weight: bold; margin-bottom: 12px;">${ev.code}</div>
+                <div style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: var(--color-blue-light); color: var(--color-blue); font-weight: bold; margin-bottom: 12px;">JIO ID: ${shortCode}</div>
                 <h2 style="margin: 0 0 5px 0;">${ev.title}</h2>
                 <p style="font-size: 12px; font-weight: 600; color: var(--color-blue); margin-bottom: 8px;">Organized by: ${ev.host_name || 'Organizer'}</p>
                 <p style="font-size: 14px; opacity: 0.8; margin-bottom: 10px;">${ev.date} @ ${ev.time} | ${ev.location}</p>
@@ -134,57 +136,50 @@ const Events = (() => {
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                     <button class="btn-primary" onclick="Events.downloadICSByData('${encodeURIComponent(JSON.stringify(ev))}')" style="width: 100%;">Add to Calendar</button>
                     <div style="display: flex; gap: 8px;">
-                        <button class="btn-secondary" onclick="Events.shareEvent('${ev.title}', '${ev.date}', '${ev.time}', '${ev.location}', '${ev.code}')" style="flex: 1;">Share</button>
-                        <button class="btn-secondary" onclick="Events.copyCode('${ev.code}')" style="flex: 1;">Copy Code</button>
+                        <button class="btn-secondary" onclick="Events.shareEvent('${ev.title}', '${ev.date}', '${ev.time}', '${ev.location}', '${shortCode}')" style="flex: 1;">Share</button>
+                        <button class="btn-secondary" onclick="Events.copyCode('${shortCode}')" style="flex: 1;">Copy ID</button>
                     </div>
                     <button onclick="Events.deleteEvent('${ev.code}')" style="width: 100%; margin-top: 12px; background: none; border: none; color: #ff3b30; font-size: 13px; cursor: pointer; text-decoration: underline;">Delete Event</button>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
     };
 
-    const copyCode = (code) => {
-        navigator.clipboard.writeText(code);
-        alert("Event code copied already! Faster share with your friends: " + code);
+    const copyCode = (shortCode) => {
+        navigator.clipboard.writeText(shortCode);
+        alert("JIO ID [" + shortCode + "] copied! Faster share with your friends leh!");
     };
 
-    const shareEvent = async (title, date, time, location, code) => {
+    const shareEvent = async (title, date, time, location, shortCode) => {
         const shareMessage = `Eh! Someone invited you to an event: ${title}!\n\n` +
                              `📅 Date: ${date} @ ${time}\n` +
                              `📍 Location: ${location}\n\n` +
-                             `To join, add code "${code}" via the Events tab! :\n` +
+                             `To join, add ID "${shortCode}" via the Events tab! :\n` +
                              `https://darrion-jio.vercel.app/`;
 
         if (navigator.share) {
             try {
-                await navigator.share({ 
-                    title: `Jio: ${title}`, 
-                    text: shareMessage 
-                });
-            } catch (err) {
-                console.log("Share cancelled or failed");
-            }
+                await navigator.share({ title: `Jio: ${title}`, text: shareMessage });
+            } catch (err) {}
         } else {
             navigator.clipboard.writeText(shareMessage);
-            alert("Copied event details liao la! Share it with your friends: \n\n" + shareMessage);
+            alert("Copied event details liao!");
         }
     };
 
-    const deleteEvent = async (code) => {
+    const deleteEvent = async (fullCode) => {
         const userInput = prompt("Double confirm event over already? Type 'DELETE' to remove for everyone.");
         if (userInput === "DELETE") {
-            const { error } = await supabase.from('events').delete().eq('code', code);
+            const { error } = await supabase.from('events').delete().eq('code', fullCode);
             if (!error) {
                 let events = JSON.parse(localStorage.getItem("jio_saved_events") || "[]");
-                events = events.filter(e => e.code !== code);
+                events = events.filter(e => e.code !== fullCode);
                 localStorage.setItem("jio_saved_events", JSON.stringify(events));
                 alert("Event deleted liao!");
                 render(); 
             } else {
                 alert("Got problem leh, cannot delete!");
             }
-        } else if (userInput !== null) {
-            alert("Dunno how spell DELETE ah? Event not deleted.");
         }
     };
 
