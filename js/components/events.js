@@ -30,7 +30,7 @@ const Events = (() => {
       </div>
 
       <div class="card">
-        <div class="card-title">Create New Event</div>
+        <div class="card-title">Create New JIO Event</div>
         <div class="form-group" style="display: flex; flex-direction: column; gap: 12px;">
           <input type="text" id="ev-host" placeholder="Your Name (Organizer)" />
           <input type="text" id="ev-title" placeholder="Event Name (e.g. Dinner @ Orchard)" />
@@ -43,7 +43,7 @@ const Events = (() => {
           <input type="text" id="ev-loc" placeholder="Location (e.g. Ion Orchard)" />
           <textarea id="ev-desc" placeholder="Notes (e.g. Meet at Exit B)" style="height: 80px;"></textarea>
           
-          <button class="btn-secondary" id="create-event-btn" style="padding: 14px;">Create & Get Code</button>
+          <button class="btn-secondary" id="create-event-btn" style="padding: 14px;">Create JIO!</button>
         </div>
       </div>
 
@@ -78,7 +78,17 @@ const Events = (() => {
         if (error) {
             alert("Database error!");
         } else {
+            const shortCode = eventData.code.split('-')[1];
+            alert(`HUAT AH! JIO event created successfully!\n\nYour ID is: ${shortCode}`);
+            
             saveAndRefresh(eventData);
+            
+            document.getElementById("ev-host").value = "";
+            document.getElementById("ev-title").value = "";
+            document.getElementById("ev-date").value = "";
+            document.getElementById("ev-time").value = "";
+            document.getElementById("ev-loc").value = "";
+            document.getElementById("ev-desc").value = "";
         }
     };
 

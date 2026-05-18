@@ -68,12 +68,9 @@
 
   <!-- init connection -->
   <script>
-    if (typeof window.supabaseClient === 'undefined') {
-      const _supabaseUrl = 'https://kczcoglntvodrworiyty.supabase.co';
-      const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjemNvZ2xudHZvZHJ3b3JpeXR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3Njc1NDcsImV4cCI6MjA5MzM0MzU0N30.cg7j-COxPj7TVn4OjHSqtbGsGkz0fjPJ3eKCjz2G2JU';
-
-      window.supabase = supabase.createClient(_supabaseUrl, _supabaseKey);
-    }
+    var _supabaseUrl = 'https://kczcoglntvodrworiyty.supabase.co';
+    var _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjemNvZ2xudHZvZHJ3b3JpeXR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3Njc1NDcsImV4cCI6MjA5MzM0MzU0N30.cg7j-COxPj7TVn4OjHSqtbGsGkz0fjPJ3eKCjz2G2JU';
+    window.supabase = supabase.createClient(_supabaseUrl, _supabaseKey);
   </script>
 
   <!-- utils -->
