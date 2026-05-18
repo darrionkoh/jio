@@ -35,11 +35,17 @@ const Debts = (() => {
           <input type="text" id="debt-ower" placeholder="Who owes?" />
           <input type="number" id="debt-amount" placeholder="$0.00" style="width: 110px;" />
         </div>
-        <div class="row">
-          <input type="date" id="debt-date" value="${todayStr()}" max="${todayStr()}" />
+        <div class="row" style="margin-top: 10px;">
+          <input type="date" 
+                id="debt-date" 
+                class="custom-picker" 
+                value="${todayStr()}" 
+                max="${todayStr()}" 
+                placeholder="Select Date" 
+                required />
         </div>
         <div style="display: flex; gap: 8px;">
-          <button class="btn-primary" id="debt-add-btn" style="margin-top: 10px;">Add Entry</button>
+          <button class="btn-primary" id="debt-add-btn" style="margin-top: 10px;">Add Debt</button>
           <button class="btn-secondary" id="debt-cancel-btn" style="display: none; margin-top: 10px; padding: 11px 16px;">Cancel</button>
         </div>
       </div>
