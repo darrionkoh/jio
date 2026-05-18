@@ -1,5 +1,7 @@
 # Jio! 🇸🇬
 
+https://darrion-jio.vercel.app/
+
 A clean and simple going-out toolkit built for Singaporeans, by Singaporeans. No gatekeeping, just helpful tools for your next gathering. Built with HTML, CSS, JavaScript, and Supabase.
 
 ## Features
